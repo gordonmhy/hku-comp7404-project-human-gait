@@ -63,6 +63,9 @@ class CSA_DATER:
 
 
     def _init(self, m_dash, n_dash):
+        """
+        Uses QR Decomposition from Scipy to obtain a columnly orthogonal matrix as U
+        """
         # Step 1 or 5
         A = np.random.rand(m_dash, n_dash)
         Q, _ = sp.linalg.qr(A)
@@ -70,6 +73,9 @@ class CSA_DATER:
 
 
     def _CSA(self, dataset, Tmax_c, shape, error, m_dash_c, n_dash_c):
+        """
+        Dimensionality Reduction using CSA
+        """
         m, n = shape
         U = self._init(m, m_dash_c)
         for t in range(Tmax_c):
@@ -103,6 +109,9 @@ class CSA_DATER:
 
 
     def _project_CSA(self, dataset, U, V):
+        """
+        Projects dataset using U and V found using CSA
+        """
         # Step 4
         projected_dataset = []
         for datapoint in dataset:
@@ -116,6 +125,9 @@ class CSA_DATER:
 
 
     def _DATER(self, dataset, Tmax_d, shape, error, m_dash_d, n_dash_d):
+        """
+        Dimensionality Reduction using DATER
+        """
         m, n = shape
         U = self._init(m, m_dash_d)
         # Group by class and calculate overall mean
@@ -174,5 +186,8 @@ class CSA_DATER:
 
 
     def _output_final(self, U_c, U_d, V_c, V_d):
+        """
+        Computes the final U and V
+        """
         # Step 8
         return U_c @ U_d, V_c @ V_d
