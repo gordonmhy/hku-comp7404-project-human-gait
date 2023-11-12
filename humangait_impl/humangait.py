@@ -4,6 +4,7 @@
 /~\ COMP7404 (Computational Intelligence and Machine Learning)
 """
 
+import statistics as stat
 import numpy as np
 import scipy as sp
 
@@ -21,7 +22,9 @@ class CSA_DATER:
         self.U = None
         self.V = None
 
-    def train(self, dataset):    
+
+    def train(self, dataset):
+        self.dataset = dataset   
         silhouette_shape = dataset[0]["gait_sequence"][0].shape
         U_c, V_c = self._CSA(dataset, self.Tmax_c, silhouette_shape, self.error_c, self.m_dash_c, self.n_dash_c)
         reduced_dataset = self._project_CSA(dataset, U_c, V_c)
@@ -31,9 +34,32 @@ class CSA_DATER:
         return self.U, self.V
 
 
-    def predict(self, X):
-        # TODO: Implement prediction logic
-        pass
+    def predict(self, probe):
+        probe_sequence = self.project(probe["gait_sequence"])
+        distances = []
+        for gallery in self.dataset:
+            gallery_sequence = self.project(gallery["gait_sequence"])
+            min_distances = []
+            for probe_silhouette in probe_sequence:
+                # For each probe silhouette, find the most similar one from the gallery
+                dists = [np.linalg.norm(probe_silhouette - gallery_silhouette, ord="fro") for gallery_silhouette in gallery_sequence]
+                min_distances.append(min(dists))
+            # Obtain the distance between this gallery and the probe
+            # (Median among distances between silhouettes of the probe and this gallery)
+            median_distance = stat.median(min_distances)
+            distances.append(median_distance)
+        # Nearest Neighbor (among distances between this probe and all galleries)
+        index = np.argmin(distances)
+        return self.dataset[index]["subject_id"]
+
+
+    def project(self, sequence):
+        if self.U is None or self.V is None:
+            return sequence
+        projected_sequence = []
+        for silhouette in sequence:
+            projected_sequence.append(self.U.T @ silhouette @ self.V)
+        return projected_sequence
 
 
     def _init(self, m_dash, n_dash):
