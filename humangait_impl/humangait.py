@@ -37,9 +37,9 @@ def _CSA(dataset, U, Tmax_c, shape, error, csa_eig_num):
         # Step 2(c)
         U_error = np.linalg.norm(U_new - U, "fro")
         V_error = np.linalg.norm(V_new - V, "fro")
+        U, V = U_new, V_new
         if t > 1 and U_error < m * error and V_error < n * error:
             break
-        U, V = U_new, V_new
     # Step 3
     return U, V
 
